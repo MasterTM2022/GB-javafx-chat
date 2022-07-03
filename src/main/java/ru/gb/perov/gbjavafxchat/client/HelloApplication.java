@@ -1,4 +1,4 @@
-package ru.gb.perov.gbjavafxchat;
+package ru.gb.perov.gbjavafxchat.client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

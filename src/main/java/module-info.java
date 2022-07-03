@@ -3,6 +3,6 @@ module ru.gb.perov.gbjavafxchat {
     requires javafx.fxml;
 
 
-    opens ru.gb.perov.gbjavafxchat to javafx.fxml;
-    exports ru.gb.perov.gbjavafxchat;
+    exports ru.gb.perov.gbjavafxchat.client;
+    opens ru.gb.perov.gbjavafxchat.client to javafx.fxml;
 }

@@ -1,4 +1,4 @@
-package ru.gb.perov.gbjavafxchat;
+package ru.gb.perov.gbjavafxchat.client;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
