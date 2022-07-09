@@ -112,15 +112,17 @@ public class ClientHandler {
     private void readMessage() {
         while (true) {
             try {
-                final String message = in.readUTF();
+                String message = in.readUTF();
                 if ("/end".equalsIgnoreCase(message)) {
                     break;
                 } else if (message.startsWith("/w ")) {
                     String[] split = message.split("\\p{Blank}+");
                     final String nickTo = split[1];
-                    message.replaceAll("/w " + nickTo + " ", "");
+                    message = this.getNick() + " -> "+ nickTo + ": " + message.replace("/w " + nickTo + " ", "");
                     if (!server.singlePost(message, nickTo)) {
-                        server.singlePost(nickTo + "не залогинен в чат!", String.valueOf(this.getNick()));
+                        server.singlePost(nickTo + " не залогинен в чат!", this.getNick());
+                    } else {
+                        server.singlePost(message, this.getNick());
                     }
                 } else {
                     server.broadcast(nick + ": " + message);

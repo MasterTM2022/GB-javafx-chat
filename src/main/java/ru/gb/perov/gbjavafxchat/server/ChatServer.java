@@ -38,9 +38,9 @@ public class ChatServer {
     public boolean singlePost(String message, String nickTo) {
         int i = 0;
         ClientHandler client;
-        while (clients.size() >= i) {
+        while (clients.size() > i) {
             client = clients.get(i++);
-            if (client.getNick() == nickTo) {
+            if (client.getNick().equals(nickTo)) {
                 client.sendMessage(message);
                 return true;
             }

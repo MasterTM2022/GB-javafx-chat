@@ -34,7 +34,7 @@ public class ChatClient {
                 e.printStackTrace();
             } finally {
                 closeConnection();
-                //System.exit(0);
+                System.exit(0);
             }
         }).start();
     }
@@ -85,22 +85,6 @@ public class ChatClient {
             final String message = in.readUTF();
             if ("/end".equalsIgnoreCase(message)) {
                 controller.setAuth(false);
-                break;
-            }
-            if (message.startsWith("/authNOTok")) {
-//                showWrongLogin();
-                final Alert alert = new Alert(Alert.AlertType.ERROR,
-                        "Неверный логин и/или пароль \n" +
-                                "либо такой пользователь незарегистрирован!",
-                        new ButtonType("Попробовать снова", ButtonBar.ButtonData.OK_DONE),
-                        new ButtonType("Выйти", ButtonBar.ButtonData.CANCEL_CLOSE)
-                );
-                alert.setTitle("Ошибка логина/пароля!");
-                final Optional<ButtonType> answer = alert.showAndWait();
-                final Boolean inExit = answer.map(select -> select.getButtonData().isCancelButton()).orElse(false);
-                if (inExit) {
-                    System.exit(0);
-                }
                 break;
             }
                 controller.addMessage(message);
