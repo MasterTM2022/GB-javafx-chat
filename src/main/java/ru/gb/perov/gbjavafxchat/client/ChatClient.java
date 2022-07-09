@@ -8,7 +8,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Optional;
 
 public class ChatClient {
 
@@ -48,11 +47,15 @@ public class ChatClient {
                 controller.setAuth(true);
                 controller.addMessage("Успешная авторизация под ником " + nick);
                 break;
-            } else {
+//            } else if (message.startsWith("/authNOTok")) {
+//                controller.setAuth(false);
+//                break;
+            }
                 controller.setAuth(false);
             }
         }
-    }
+
+
 
     private void closeConnection() {
         if (in != null) {

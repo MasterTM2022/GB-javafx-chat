@@ -12,7 +12,6 @@ public class ChatServer {
 
     public ChatServer() {
         this.clients = new ArrayList<>();
-
     }
 
     public void run() {

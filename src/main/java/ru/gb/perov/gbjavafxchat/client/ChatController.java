@@ -68,6 +68,7 @@ public class ChatController {
 
     public void setAuth(boolean success) {
         authBox.setVisible(!success);
+        textAuth.setVisible(!success);
         messageBox.setVisible(success);
         loginField.clear();
         password.clear();
