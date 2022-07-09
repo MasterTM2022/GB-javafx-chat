@@ -118,7 +118,7 @@ public class ClientHandler {
                 } else if (message.startsWith("/w ")) {
                     String[] split = message.split("\\p{Blank}+");
                     final String nickTo = split[1];
-                    message = this.getNick() + " -> "+ nickTo + ": " + message.replace("/w " + nickTo + " ", "");
+                    message = this.getNick() + " -> " + nickTo + ": " + message.replace("/w " + nickTo + " ", "");
                     if (!server.singlePost(message, nickTo)) {
                         server.singlePost(nickTo + " не залогинен в чат!", this.getNick());
                     } else {

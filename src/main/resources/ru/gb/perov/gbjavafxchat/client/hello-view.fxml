@@ -19,17 +19,17 @@
         <Label fx:id="textAuth" visible="false" text="Логин и/или пароль неверны" alignment="CENTER"/>
 
 
-        <VBox fx:id = "messageBox" visible="false">
-    <TextArea fx:id="messageArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS">
-        <cursor>
-            <Cursor fx:constant="DEFAULT"/>
-        </cursor>
-    </TextArea>
-    <HBox alignment="BOTTOM_CENTER" spacing="10.0">
-        <TextField fx:id="messageField" promptText="Напишите сообщение..." HBox.hgrow="ALWAYS"/>
-        <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" onAction="#clickSendButton"
-                prefWidth="50.0" text="Send"/>
-    </HBox>
+        <VBox fx:id="messageBox" visible="false">
+            <TextArea fx:id="messageArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS">
+                <cursor>
+                    <Cursor fx:constant="DEFAULT"/>
+                </cursor>
+            </TextArea>
+            <HBox alignment="BOTTOM_CENTER" spacing="10.0">
+                <TextField fx:id="messageField" promptText="Напишите сообщение..." HBox.hgrow="ALWAYS"/>
+                <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" onAction="#clickSendButton"
+                        prefWidth="50.0" text="Send"/>
+            </HBox>
         </VBox>
     </VBox>
     <opaqueInsets>

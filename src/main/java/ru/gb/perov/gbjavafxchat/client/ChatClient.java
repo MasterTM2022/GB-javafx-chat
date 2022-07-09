@@ -87,7 +87,7 @@ public class ChatClient {
                 controller.setAuth(false);
                 break;
             }
-                controller.addMessage(message);
+            controller.addMessage(message);
         }
     }
 
