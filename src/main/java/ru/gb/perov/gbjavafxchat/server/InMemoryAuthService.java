@@ -31,6 +31,7 @@ public class InMemoryAuthService implements AuthService {
     }
 
     private final List<UserData> users;
+
     public InMemoryAuthService() {
         users = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -40,8 +41,8 @@ public class InMemoryAuthService implements AuthService {
 
     @Override
     public String getNickByLoginAndPassword(String login, String password) {
-        for (UserData user: users) {
-            if(login.equals(user.getLogin())&&password.equals(user.getPassword())) {
+        for (UserData user : users) {
+            if (login.equals(user.getLogin()) && password.equals(user.getPassword())) {
                 return user.getNick();
             }
         }
