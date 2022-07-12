@@ -1,9 +1,13 @@
 package ru.gb.perov.gbjavafxchat.server;
 
+import ru.gb.perov.gbjavafxchat.Command;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+
+import static ru.gb.perov.gbjavafxchat.Command.*;
 
 public class ClientHandler {
     private Socket socket;
@@ -23,8 +27,9 @@ public class ClientHandler {
             this.out = new DataOutputStream(socket.getOutputStream());
             new Thread(() -> {
                 try {
-                    authentificate();
-                    readMessage();
+                    if (authentificate()) {
+                        readMessage();
+                    }
                 } finally {
                     closeConnection();
                 }
@@ -39,41 +44,47 @@ public class ClientHandler {
         return nick;
     }
 
-    private void authentificate() { // контракт "формата сообщений": /auth login1 pass1
+    private boolean authentificate() { // контракт "формата сообщений": /auth login1 pass1
         while (true) {
             try {
                 final String message = in.readUTF();
-                if (message.startsWith("/auth")) {
-                    String[] split = message.split("\\p{Blank}+");
-                    final String login = split[1];
-                    final String password = split[2];
+                Command command = Command.getCommand(message);
+                if (command == END) {
+                    break;
+                }
+                if (command == AUTH) {
+                    String[] params = command.parse(message);
+                    String login = params[0];
+                    String password = params[1];
                     String nick = authService.getNickByLoginAndPassword(login, password);
                     if (nick != null) {
                         if (server.isNickBusy(nick)) {
-                            sendMessage("Пользователь уже авторизован");
+                            sendMessage(Command.ERROR, "Пользователь уже авторизован");
                             continue;
                         }
-                        sendMessage("/authok " + nick);
+                        sendMessage(Command.AUTHOK, nick);
                         this.nick = nick;
-                        server.broadcast("Пользователь " + nick + " зашёл в чат.");
+                        server.broadcast(MESSAGE, "Пользователь " + nick + " зашёл в чат.");
                         server.subscribe(this);
-                        break;
+                        return true;
                     } else {
-//                         в конструкции с видимостью/невидимостью блоков
-//                         данная функция неактуальна ???
-//                         sendMessage("Неверные логин и пароль");
-                        sendMessage("/authNOTok");
+                        sendMessage(ERROR, "Неверный логин и/или пароль");
+                        continue;
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return false;
+    }
+
+    public void sendMessage(Command command, String... params) {
+        sendMessage(command.collectMessage(params));
     }
 
     private void closeConnection() {
-        sendMessage("/end");
-
+        sendMessage(END);
         if (in != null) {
             try {
                 in.close();
@@ -100,7 +111,7 @@ public class ClientHandler {
         }
     }
 
-    public void sendMessage(String message) {
+    private void sendMessage(String message) {
         try {
             out.writeUTF(message);
         } catch (IOException e) {
@@ -111,21 +122,19 @@ public class ClientHandler {
     private void readMessage() {
         while (true) {
             try {
-                String message = in.readUTF();
-                if ("/end".equalsIgnoreCase(message)) {
+                final String message = in.readUTF();
+                final Command command = getCommand(message);
+                String[] params = command.parse(message);
+                if (command == END) {
                     break;
-                } else if (message.startsWith("/w ")) {
-                    String[] split = message.split("\\p{Blank}+");
-                    final String nickTo = split[1];
-                    message = this.getNick() + " -> " + nickTo + ": " + message.replace("/w " + nickTo + " ", "");
-                    if (!server.singlePost(message, nickTo)) {
-                        server.singlePost(nickTo + " не залогинен в чат!", this.getNick());
-                    } else {
-                        server.singlePost(message, this.getNick());
-                    }
-                } else {
-                    server.broadcast(nick + ": " + message);
                 }
+                if (command == PRIVATE_MESSAGE) {
+                    String nickTo = params[0];
+                    String singleMessage = params[1];
+                    server.singlePost(singleMessage, nickTo, this);
+                    continue;
+                }
+                server.broadcast(nick + ": " + params[0]);
             } catch (IOException e) {
                 e.printStackTrace();
             }

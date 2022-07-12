@@ -1,17 +1,22 @@
 package ru.gb.perov.gbjavafxchat.server;
 
+import ru.gb.perov.gbjavafxchat.Command;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static ru.gb.perov.gbjavafxchat.Command.*;
 
 public class ChatServer {
 
-    private final List<ClientHandler> clients;
+    private final Map<String, ClientHandler> clients;
 
     public ChatServer() {
-        this.clients = new ArrayList<>();
+        this.clients = new HashMap<>();
     }
 
     public void run() {
@@ -29,39 +34,46 @@ public class ChatServer {
     }
 
     public void broadcast(String message) {
-        for (ClientHandler client : clients) {
-            client.sendMessage(message);
+        for (ClientHandler client : clients.values()) {
+            client.sendMessage(MESSAGE, message);
         }
     }
 
-    public boolean singlePost(String message, String nickTo) {
-        int i = 0;
-        ClientHandler client;
-        while (clients.size() > i) {
-            client = clients.get(i++);
-            if (client.getNick().equals(nickTo)) {
-                client.sendMessage(message);
-                return true;
-            }
+    public void singlePost(String message, String nickTo, ClientHandler clientFrom) {
+        ClientHandler clientTo = clients.get(nickTo);
+        if (clientTo == null) {
+            clientFrom.sendMessage(ERROR, nickTo + " не залогинен в чат!");
+        } else {
+            clientTo.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
+            clientFrom.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
         }
-        return false;
     }
 
     public void subscribe(ClientHandler client) {
-        clients.add(client);
+        clients.put(client.getNick(), client);
+        broadcastClientsList();
+    }
+
+    private void broadcastClientsList() {
+        String nicks = clients.values().stream()
+                .map(ClientHandler::getNick)
+                .collect(Collectors.joining(" "));
+        broadcast(MESSAGE, "В чате активны пользователи:\n" + nicks);
+        broadcast(CLIENTS, nicks);
+    }
+
+    public void broadcast(Command command, String message) {
+        for (ClientHandler client : clients.values()) {
+            client.sendMessage(command, message);
+        }
     }
 
     public boolean isNickBusy(String nick) {
-        for (ClientHandler client :
-                clients) {
-            if (nick.equals(client.getNick())) {
-                return true;
-            }
-        }
-        return false;
+        return clients.get(nick) != null;
     }
 
     public void unsubscibe(ClientHandler client) {
-        clients.remove(client);
+        clients.remove(client.getNick());
+        broadcastClientsList();
     }
 }

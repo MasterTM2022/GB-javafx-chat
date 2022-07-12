@@ -1,15 +1,21 @@
 package ru.gb.perov.gbjavafxchat.client;
 
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import static ru.gb.perov.gbjavafxchat.Command.*;
+
 public class ChatController {
+    @FXML
+    private volatile ProgressBar progressBar;
+    @FXML
+    private ListView<String> clientList;
     @FXML
     private HBox authBox;
     @FXML
@@ -17,14 +23,20 @@ public class ChatController {
     @FXML
     private PasswordField password;
     @FXML
-    private VBox messageBox;
+    private HBox messageBox;
     @FXML
     private TextArea messageArea;
     @FXML
     private TextField messageField;
     @FXML
-    private Label textAuth;
+    private Label inChatAs;
     private final ChatClient client;
+    private String selectedNick;
+
+    public void setProgress(double persentage) {
+            progressBar.setProgress(persentage);
+    }
+
 
     public ChatController() {
         this.client = new ChatClient(this);
@@ -37,6 +49,7 @@ public class ChatController {
             }
         }
     }
+
 
     private void showNotification() {
         final Alert alert = new Alert(Alert.AlertType.ERROR,
@@ -53,10 +66,13 @@ public class ChatController {
         }
     }
 
-    public void clickSendButton(ActionEvent actionEvent) {
+    public void clickSendButton() {
         final String message = messageField.getText();
-        if (!message.isBlank()) {
-            client.sendMessage(message);
+        if (selectedNick != null) {
+            client.sendMessage(PRIVATE_MESSAGE, selectedNick, message);
+            selectedNick = null;
+        } else if (!message.isBlank()) {
+            client.sendMessage(MESSAGE, message);
         }
         messageField.clear();
         messageField.requestFocus();
@@ -68,13 +84,47 @@ public class ChatController {
 
     public void setAuth(boolean success) {
         authBox.setVisible(!success);
-        textAuth.setVisible(!success);
         messageBox.setVisible(success);
         loginField.clear();
         password.clear();
+        messageArea.setText("");
+        Platform.runLater(() -> messageField.requestFocus());
     }
 
-    public void signInBtnClick(ActionEvent actionEvent) {
-        client.sendMessage("/auth " + loginField.getText() + " " + password.getText());
+    public void signInBtnClick() {
+        client.sendMessage(AUTH, loginField.getText(), password.getText());
+    }
+
+    public void showError(String errorMessage) {
+        final Alert alert = new Alert(Alert.AlertType.ERROR, errorMessage,
+                new ButtonType("OK", ButtonBar.ButtonData.OK_DONE));
+        alert.setTitle("Error!");
+        alert.showAndWait();
+    }
+
+    public void selectClient(MouseEvent mouseEvent) {
+        if (mouseEvent.getClickCount() == 2) {
+            String selectedNick = clientList.getSelectionModel().getSelectedItem();
+            if (selectedNick != null && !selectedNick.isEmpty()) {
+                this.selectedNick = selectedNick;
+            }
+        }
+    }
+
+    public void updateClientList(String[] clients) {
+        clientList.getItems().clear();
+        clientList.getItems().addAll(clients);
+    }
+
+    public void logOutClick() {
+        client.sendMessage(END);
+    }
+
+    public ChatClient getClient() {
+        return client;
+    }
+
+    public void setNickOnForm(String nick) {
+        Platform.runLater(() -> inChatAs.setText("Login as: " + nick));
     }
 }
