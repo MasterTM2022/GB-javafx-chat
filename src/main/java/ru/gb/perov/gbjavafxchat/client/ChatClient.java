@@ -1,14 +1,13 @@
 package ru.gb.perov.gbjavafxchat.client;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-
+import javafx.application.Platform;
+import ru.gb.perov.gbjavafxchat.Command;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Optional;
+
+import static ru.gb.perov.gbjavafxchat.Command.*;
 
 public class ChatClient {
 
@@ -17,6 +16,9 @@ public class ChatClient {
     private DataOutputStream out;
 
     private final ChatController controller;
+    private volatile static boolean flagAuth = false;
+    private final int PAUSE_TO_SLEEP_SEC = 15;
+    private final int FPS = 2;
 
     public ChatClient(ChatController controller) {
         this.controller = controller;
@@ -28,10 +30,12 @@ public class ChatClient {
         out = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
             try {
-                waitAuth();
-                readMessages();
+                if (waitAuth()) {
+                    readMessages();
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Клиент был закрыт по тайм-ауту...");
+//                e.printStackTrace();
             } finally {
                 closeConnection();
                 System.exit(0);
@@ -39,20 +43,52 @@ public class ChatClient {
         }).start();
     }
 
-    private void waitAuth() throws IOException {
+    private boolean waitAuth() throws IOException {
+        new Thread(() -> {
+            int timer = PAUSE_TO_SLEEP_SEC * FPS;
+            while (timer >= 0) {
+                try {
+                    Thread.sleep(1000/FPS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                double var = 1.0 * timer / PAUSE_TO_SLEEP_SEC / FPS;
+                controller.setProgress(var);
+                timer -= 1;
+            }
+
+            if (!flagAuth) {
+                try {
+                    Platform.runLater(() -> controller.showError("Слишком долго вспоминатете параметры входа...\nСейчас клиент будет закрыт"));
+                    Thread.sleep(3_000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                sendMessage(END);
+                System.exit(0);
+            }
+        }).start();
+
         while (true) {
             final String message = in.readUTF();
-            if (message.startsWith("/authok")) { //   /authok nick1
-                final String[] split = message.split("\\p{Blank}+");
-                final String nick = split[1];
+            final Command command = Command.getCommand(message);
+            final String[] params = command.parse(message);
+            if (command == AUTHOK) { //   /authok nick1
+                flagAuth = true;
+                final String nick = params[0];
+                controller.setNickOnForm(nick);
                 controller.setAuth(true);
                 controller.addMessage("Успешная авторизация под ником " + nick);
-                break;
-            } else {
-                controller.setAuth(false);
+                return true;
             }
+            if (command == ERROR) {
+                Platform.runLater(() -> controller.showError(params[0]));
+                continue;
+            }
+            controller.setAuth(false);
         }
     }
+
 
     private void closeConnection() {
         if (in != null) {
@@ -83,15 +119,31 @@ public class ChatClient {
     private void readMessages() throws IOException {
         while (true) {
             final String message = in.readUTF();
-            if ("/end".equalsIgnoreCase(message)) {
+            final Command command = Command.getCommand(message);
+            if (END == command) {
                 controller.setAuth(false);
                 break;
             }
-                controller.addMessage(message);
+            String[] params = command.parse(message);
+            if (ERROR == command) {
+                String messageError = params[0];
+                Platform.runLater(() -> controller.showError(messageError));
+                continue;
+            }
+            if (MESSAGE == command) {
+                controller.addMessage(params[0]);
+//                Platform.runLater(() -> controller.addMessage(params[0]));
+                continue;
+            }
+            if (CLIENTS == command) {
+                Platform.runLater(() -> controller.updateClientList(params));
+                continue;
+            }
         }
     }
 
-    public void sendMessage(String message) {
+
+    private void sendMessage(String message) {
         try {
             out.writeUTF(message);
         } catch (IOException e) {
@@ -99,18 +151,7 @@ public class ChatClient {
         }
     }
 
-//    private void showWrongLogin() {
-//        final Alert alert = new Alert(Alert.AlertType.ERROR,
-//                "Неверный логин и/или пароль \n" +
-//                        "либо такой пользователь незарегистрирован!",
-//                new ButtonType("Попробовать снова", ButtonBar.ButtonData.OK_DONE),
-//                new ButtonType("Выйти", ButtonBar.ButtonData.CANCEL_CLOSE)
-//        );
-//        alert.setTitle("Ошибка логина/пароля!");
-//        final Optional<ButtonType> answer = alert.showAndWait();
-//        final Boolean inExit = answer.map(select -> select.getButtonData().isCancelButton()).orElse(false);
-//        if (inExit) {
-//            System.exit(0);
-//        }
-//    }
+    public void sendMessage(Command command, String... params) {
+        sendMessage(command.collectMessage(params));
+    }
 }

@@ -3,36 +3,75 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1" alignment="CENTER" prefHeight="500.0" prefWidth="600.0" spacing="10.0"
-      xmlns="http://javafx.com/javafx/16" fx:controller="ru.gb.perov.gbjavafxchat.client.ChatController">
+<VBox alignment="CENTER" prefHeight="500.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.gb.perov.gbjavafxchat.client.ChatController">
     <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
     </padding>
-    <VBox>
-        <HBox fx:id="authBox">
-            <TextField fx:id="loginField" promptText="login"/>
-            <PasswordField fx:id="password" promptText="password"/>
-            <Button text="Sign in" onAction="#signInBtnClick"/>
-        </HBox>
-        <Label fx:id="textAuth" visible="false" text="Логин и/или пароль неверны" alignment="CENTER"/>
 
-
-        <VBox fx:id = "messageBox" visible="false">
-    <TextArea fx:id="messageArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS">
-        <cursor>
-            <Cursor fx:constant="DEFAULT"/>
-        </cursor>
-    </TextArea>
-    <HBox alignment="BOTTOM_CENTER" spacing="10.0">
-        <TextField fx:id="messageField" promptText="Напишите сообщение..." HBox.hgrow="ALWAYS"/>
-        <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" onAction="#clickSendButton"
-                prefWidth="50.0" text="Send"/>
+    <HBox fx:id="authBox">
+        <TextField fx:id="loginField" promptText="login" />
+        <PasswordField fx:id="password" promptText="password" />
+        <Button onAction="#signInBtnClick" text="Sign in" />
+        <Label alignment="CENTER" lineSpacing="3.0" text="Sign in time: ">
+            <effect>
+                <Lighting bumpInput="$null">
+                    <light>
+                        <Light.Distant>
+                            <color>
+                                <Color red="1.0" />
+                            </color>
+                        </Light.Distant>
+                    </light>
+                </Lighting>
+            </effect>
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+            <HBox.margin>
+                <Insets left="5.0" top="4.0" />
+            </HBox.margin>
+        </Label>
+        <ProgressBar fx:id="progressBar" minHeight="20" minWidth="150" progress="1.0">
+            <HBox.margin>
+                <Insets top="4.0" />
+            </HBox.margin>
+        </ProgressBar>
     </HBox>
+
+    <!--    <Label fx:id="textAuth" visible="false" alignment="BASELINE_CENTER" text="Логин и/или пароль неверны"></Label>-->
+
+    <HBox fx:id="messageBox" visible="false">
+        <VBox>
+            <TextArea fx:id="messageArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS">
+                <cursor>
+                    <Cursor fx:constant="DEFAULT" />
+                </cursor>
+            </TextArea>
+            <HBox alignment="BOTTOM_CENTER" spacing="10.0">
+                <TextField fx:id="messageField" promptText="Напишите сообщение..." HBox.hgrow="ALWAYS" />
+                <Button alignment="CENTER" contentDisplay="CENTER" defaultButton="true" onAction="#clickSendButton" prefWidth="50.0" text="Send" />
+            </HBox>
         </VBox>
-    </VBox>
+        <VBox>
+            <HBox alignment="CENTER">
+                <Label fx:id="inChatAs" />
+                <Button onAction="#logOutClick" text="Logout">
+               <HBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </HBox.margin></Button>
+            </HBox>
+            <ListView fx:id="clientList" maxWidth="200" minWidth="200" onMouseClicked="#selectClient" />
+        </VBox>
+        <HBox.margin>
+            <Insets />
+        </HBox.margin>
+    </HBox>
+
     <opaqueInsets>
-        <Insets/>
+        <Insets />
     </opaqueInsets>
 </VBox>
