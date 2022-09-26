@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -32,9 +31,11 @@ public class ChatController {
     private Label inChatAs;
     private final ChatClient client;
     private String selectedNick;
+    @FXML
+    private TextField newNick;
 
     public void setProgress(double persentage) {
-            progressBar.setProgress(persentage);
+        progressBar.setProgress(persentage);
     }
 
 
@@ -64,6 +65,12 @@ public class ChatController {
         if (inExit) {
             System.exit(0);
         }
+    }
+
+    public void ChangeNickClick() {
+        final String message = newNick.getText();
+        setNickOnForm(message.replace(' ', '_'));
+        client.sendMessage(CHANGE_NICK, message);
     }
 
     public void clickSendButton() {

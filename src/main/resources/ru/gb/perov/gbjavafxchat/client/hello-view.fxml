@@ -65,6 +65,17 @@
                </HBox.margin></Button>
             </HBox>
             <ListView fx:id="clientList" maxWidth="200" minWidth="200" onMouseClicked="#selectClient" />
+
+
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="168.0">
+                <Button onAction="#ChangeNickClick" prefHeight="25.0" prefWidth="103.0" text="Change Nick to">
+                    <HBox.margin>
+                        <Insets left="5.0" right="5.0" />
+                    </HBox.margin></Button>
+                <TextField fx:id="newNick" prefHeight="25.0" prefWidth="87.0" promptText="my new Nick" />
+            </HBox>
+
+
         </VBox>
         <HBox.margin>
             <Insets />
