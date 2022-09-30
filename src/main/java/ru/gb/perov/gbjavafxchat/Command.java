@@ -58,8 +58,26 @@ public enum Command {
             return new String[]{split[1]};
         }
     },
-
-    CHANGE_NICK ("/changeNick") {
+    CHANGE_NICK("/changeNick") {
+        @Override
+        public String[] parse(String commandText) {
+            final String[] split = commandText.split(TOKEN_DELIMETR, 2);
+            return new String[]{split[1]};
+        }
+    },
+    REFUSE_CHANGE_NICK("/refuseChangeNick") {
+        @Override
+        public String[] parse(String commandText) {
+            return new String[0];
+        }
+    },
+    APROOVE_CHANGE_NICK("/aprooveChangeNick") {
+        @Override
+        public String[] parse(String commandText) {
+            return new String[0];
+        }
+    },
+    SEND_HISTORY("/send_history"){
         @Override
         public String[] parse(String commandText) {
             final String[] split = commandText.split(TOKEN_DELIMETR, 2);
@@ -68,7 +86,7 @@ public enum Command {
     };
 
     private final String command;
-    final static String TOKEN_DELIMETR = "[ \\t]+";
+    public final static String TOKEN_DELIMETR = "[ \\t]+";
     static final Map<String, Command> commandMap = Arrays.stream(values())
             .collect(Collectors.toMap(Command::getCommand, Function.identity()));
 

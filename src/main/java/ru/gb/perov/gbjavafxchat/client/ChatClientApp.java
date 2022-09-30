@@ -17,7 +17,10 @@ public class ChatClientApp extends Application {
         stage.setScene(scene);
         stage.show();
         ChatController controller = fxmlLoader.getController();
-        stage.setOnCloseRequest(event -> controller.getClient().sendMessage(END));
+        stage.setOnCloseRequest(event -> {
+            controller.sendHistory();
+            controller.getClient().sendMessage(END);
+        });
     }
 
     public static void main(String[] args) {
