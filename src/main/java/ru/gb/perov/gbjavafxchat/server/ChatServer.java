@@ -1,5 +1,7 @@
 package ru.gb.perov.gbjavafxchat.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.gb.perov.gbjavafxchat.Command;
 
 import java.io.IOException;
@@ -19,14 +21,19 @@ public class ChatServer {
         this.clients = new HashMap<>();
     }
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(ChatServer.class);
+
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(8189);
-             AuthService authService = new InMemoryAuthService()) {
+        try (ServerSocket serverSocket = new ServerSocket(8190);
+            AuthService authService = new InMemoryAuthService()) {
+
+            LOGGER.info("String: {}.", "Сервер запущен");
+
             while (true) {
-                System.out.println("Ожидаю подключения...");
+                LOGGER.info("String: {}.", "Ожидаю подключения...");
                 final Socket socket = serverSocket.accept();
                 new ClientHandler(socket, this, authService);
-                System.out.println("Клиент подключен.");
+                LOGGER.info("String: {}.", "Клиент подключен");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -43,11 +50,13 @@ public class ChatServer {
         ClientHandler clientTo = clients.get(nickTo);
         if (clientTo == null) {
             clientFrom.sendMessage(ERROR, nickTo + " не залогинен в чат!");
+            LOGGER.error("String: {}.", "Попытка отправить сообщение незалогиненному пользователю " + nickTo);
         } else {
             clientTo.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
             if (!nickTo.equals(clientFrom.getNick())) {
                 clientFrom.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
             }
+            LOGGER.info("String: {}.", "Пользователь " + clientFrom.getNick() + " отправил сообщение для пользователя " + nickTo);
         }
     }
 
@@ -76,6 +85,7 @@ public class ChatServer {
         this.clients.put(newNick, this.clients.get(nick));
         this.clients.remove(nick);
         broadcastClientsList();
+        LOGGER.info("String: {}.", "Пользователь " + nick + " сменил ник на " + newNick);
     }
 
     public void broadcastClientsList() {
@@ -99,6 +109,7 @@ public class ChatServer {
     public void unsubscibe(ClientHandler client) {
         clients.remove(client.getNick());
         broadcastClientsList();
+        LOGGER.warn("String: {}.", "Клиент " + client.getNick() + " отключился");
     }
 
     public void refuseChangeNick(ClientHandler client) {
