@@ -54,12 +54,19 @@ public class ChatServer {
         broadcastClientsList();
     }
 
-    private void broadcastClientsList() {
+    public void changeNick(String nick, String newNick) {
+        this.clients.get(nick).setNick(newNick);
+        this.clients.put(newNick, this.clients.get(nick));
+        this.clients.remove(nick);
+        broadcastClientsList();
+    }
+
+    public void broadcastClientsList() {
         String nicks = clients.values().stream()
                 .map(ClientHandler::getNick)
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining("; "));
         broadcast(MESSAGE, "В чате активны пользователи:\n" + nicks);
-        broadcast(CLIENTS, nicks);
+        //broadcast(CLIENTS, nicks);
     }
 
     public void broadcast(Command command, String message) {

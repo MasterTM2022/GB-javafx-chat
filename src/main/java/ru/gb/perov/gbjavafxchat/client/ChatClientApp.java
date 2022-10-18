@@ -4,7 +4,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 
 import static ru.gb.perov.gbjavafxchat.Command.*;
@@ -19,8 +18,8 @@ public class ChatClientApp extends Application {
         stage.show();
         ChatController controller = fxmlLoader.getController();
         stage.setOnCloseRequest(event -> controller.getClient().sendMessage(END));
-
     }
+
     public static void main(String[] args) {
         launch();
     }

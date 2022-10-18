@@ -57,6 +57,14 @@ public enum Command {
             final String[] split = commandText.split(TOKEN_DELIMETR, 2);
             return new String[]{split[1]};
         }
+    },
+
+    CHANGE_NICK ("/changeNick") {
+        @Override
+        public String[] parse(String commandText) {
+            final String[] split = commandText.split(TOKEN_DELIMETR, 2);
+            return new String[]{split[1]};
+        }
     };
 
     private final String command;
@@ -65,7 +73,6 @@ public enum Command {
             .collect(Collectors.toMap(Command::getCommand, Function.identity()));
 
     Command(String command) {
-
         this.command = command;
     }
 

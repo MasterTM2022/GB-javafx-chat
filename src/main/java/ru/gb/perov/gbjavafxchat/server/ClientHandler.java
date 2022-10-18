@@ -6,8 +6,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.SQLException;
 
 import static ru.gb.perov.gbjavafxchat.Command.*;
+import static ru.gb.perov.gbjavafxchat.server.JdbcApp.*;
 
 public class ClientHandler {
     private Socket socket;
@@ -42,6 +44,10 @@ public class ClientHandler {
 
     public String getNick() {
         return nick;
+    }
+
+    public void setNick(String nick) {
+        this.nick = nick;
     }
 
     private boolean authentificate() { // контракт "формата сообщений": /auth login1 pass1
@@ -134,10 +140,25 @@ public class ClientHandler {
                     server.singlePost(singleMessage, nickTo, this);
                     continue;
                 }
+                if (command == CHANGE_NICK) {
+                    String newNick = params[0];
+                    try {
+                        connect();
+                        stmt.executeUpdate("UPDATE Users SET Nick = '" + newNick + "' WHERE Nick = '" + nick + "';");
+                        server.broadcast(nick + " сменил Nickname на новый - " + newNick);
+                        server.changeNick(nick, newNick);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    } finally {
+                        disconnect();
+                    }
+                    continue;
+                }
                 server.broadcast(nick + ": " + params[0]);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
 }

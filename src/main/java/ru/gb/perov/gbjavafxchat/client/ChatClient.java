@@ -17,7 +17,7 @@ public class ChatClient {
 
     private final ChatController controller;
     private volatile static boolean flagAuth = false;
-    private final int PAUSE_TO_SLEEP_SEC = 15;
+    private final int PAUSE_TO_SLEEP_SEC = 20;
     private final int FPS = 2;
 
     public ChatClient(ChatController controller) {
@@ -81,6 +81,7 @@ public class ChatClient {
                 controller.addMessage("Успешная авторизация под ником " + nick);
                 return true;
             }
+
             if (command == ERROR) {
                 Platform.runLater(() -> controller.showError(params[0]));
                 continue;
@@ -132,16 +133,14 @@ public class ChatClient {
             }
             if (MESSAGE == command) {
                 controller.addMessage(params[0]);
-//                Platform.runLater(() -> controller.addMessage(params[0]));
                 continue;
             }
-            if (CLIENTS == command) {
+            if (CLIENTS == command || CHANGE_NICK == command) {
                 Platform.runLater(() -> controller.updateClientList(params));
                 continue;
             }
         }
     }
-
 
     private void sendMessage(String message) {
         try {

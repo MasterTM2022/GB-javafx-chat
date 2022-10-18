@@ -1,17 +1,21 @@
 package ru.gb.perov.gbjavafxchat.server;
 
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static ru.gb.perov.gbjavafxchat.server.JdbcApp.*;
 
 public class InMemoryAuthService implements AuthService {
 
     private static class UserData {
-        private final String nick;
+        private String nick;
         private final String login;
         private final String password;
 
-        public UserData(String nick, String login, String password) {
+        public UserData(int id, String nick, String login, String password) {
             this.nick = nick;
             this.login = login;
             this.password = password;
@@ -30,23 +34,39 @@ public class InMemoryAuthService implements AuthService {
         }
     }
 
-    private final List<UserData> users;
+    private List<UserData> users;
 
     public InMemoryAuthService() {
-        users = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            users.add(new UserData("nick" + i, "login" + i, "pass" + i));
+        try {
+            connect();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Users;");
+            users = new ArrayList<>();
+            while (rs.next()) {
+                users.add(new UserData(rs.getInt("ID"), rs.getString("Nick"), rs.getString("Login"), rs.getString("Password")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            disconnect();
         }
     }
-
     @Override
     public String getNickByLoginAndPassword(String login, String password) {
-        for (UserData user : users) {
-            if (login.equals(user.getLogin()) && password.equals(user.getPassword())) {
-                return user.getNick();
+        String returnString = null;
+        try {
+            connect();
+            ResultSet resultSet = stmt.executeQuery("SELECT * FROM Users \n" +
+                    "WHERE Login = '" + login + "' AND\n" +
+                    "Password = '" + password + "';");
+            if (resultSet.next()) {
+                returnString = resultSet.getString("Nick");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            disconnect();
         }
-        return null;
+        return returnString;
     }
 
     @Override
