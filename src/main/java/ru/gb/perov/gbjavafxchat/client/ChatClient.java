@@ -2,6 +2,7 @@ package ru.gb.perov.gbjavafxchat.client;
 
 import javafx.application.Platform;
 import ru.gb.perov.gbjavafxchat.Command;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -86,10 +87,10 @@ public class ChatClient {
                 Platform.runLater(() -> controller.showError(params[0]));
                 continue;
             }
+
             controller.setAuth(false);
         }
     }
-
 
     private void closeConnection() {
         if (in != null) {
@@ -121,11 +122,14 @@ public class ChatClient {
         while (true) {
             final String message = in.readUTF();
             final Command command = Command.getCommand(message);
+
             if (END == command) {
                 controller.setAuth(false);
                 break;
             }
+
             String[] params = command.parse(message);
+
             if (ERROR == command) {
                 String messageError = params[0];
                 Platform.runLater(() -> controller.showError(messageError));
@@ -135,7 +139,19 @@ public class ChatClient {
                 controller.addMessage(params[0]);
                 continue;
             }
+
+            if (command == APROOVE_CHANGE_NICK) {
+                controller.setNewNickOnForm();
+                continue;
+            }
+
+            if (command == REFUSE_CHANGE_NICK) {
+                controller.setOldNickOnForm();
+                continue;
+            }
+
             if (CLIENTS == command || CHANGE_NICK == command) {
+//                Arrays.stream(params).forEach(System.out::println);
                 Platform.runLater(() -> controller.updateClientList(params));
                 continue;
             }

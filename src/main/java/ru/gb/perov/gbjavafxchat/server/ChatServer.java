@@ -45,8 +45,25 @@ public class ChatServer {
             clientFrom.sendMessage(ERROR, nickTo + " не залогинен в чат!");
         } else {
             clientTo.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
-            clientFrom.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
+            if (!nickTo.equals(clientFrom.getNick())) {
+                clientFrom.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
+            }
         }
+    }
+
+    public void aprooveChangeNick(ClientHandler client) {
+        client.sendMessage(APROOVE_CHANGE_NICK);
+    }
+
+
+    public void historyBack(String message, ClientHandler clientFrom) {
+//        ClientHandler clientTo = clients.get(nickTo);
+//        if (clientTo == null) {
+//            clientFrom.sendMessage(ERROR, nickTo + " не залогинен в чат!");
+//        } else {
+//            clientTo.sendMessage(MESSAGE, clientFrom.getNick() + " -> " + nickTo + ": " + message);
+        clientFrom.sendMessage(MESSAGE, clientFrom.getNick() + "'s history -> " + clientFrom.getNick() + ": \n\n" + message);
+
     }
 
     public void subscribe(ClientHandler client) {
@@ -64,9 +81,9 @@ public class ChatServer {
     public void broadcastClientsList() {
         String nicks = clients.values().stream()
                 .map(ClientHandler::getNick)
-                .collect(Collectors.joining("; "));
+                .collect(Collectors.joining(" "));
         broadcast(MESSAGE, "В чате активны пользователи:\n" + nicks);
-        //broadcast(CLIENTS, nicks);
+        broadcast(CLIENTS, nicks);
     }
 
     public void broadcast(Command command, String message) {
@@ -82,5 +99,10 @@ public class ChatServer {
     public void unsubscibe(ClientHandler client) {
         clients.remove(client.getNick());
         broadcastClientsList();
+    }
+
+    public void refuseChangeNick(ClientHandler client) {
+        client.sendMessage(REFUSE_CHANGE_NICK);
+
     }
 }
