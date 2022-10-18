@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static ru.gb.perov.gbjavafxchat.Command.*;
+import static ru.gb.perov.gbjavafxchat.server.ChatServer.LOGGER;
 import static ru.gb.perov.gbjavafxchat.server.JdbcApp.*;
 
 public class ClientHandler {
@@ -67,11 +68,13 @@ public class ClientHandler {
                     if (nick != null) {
                         if (server.isNickBusy(nick)) {
                             sendMessage(Command.ERROR, "Пользователь уже авторизован");
+                            LOGGER.warn("String: {}.", "Попытка входа под уже залогиненым пользователем " + nick);
                             continue;
                         }
                         sendMessage(Command.AUTHOK, nick);
                         this.nick = nick;
                         server.broadcast(MESSAGE, "Пользователь " + nick + " зашёл в чат.");
+                        LOGGER.info("String: {}.", "Пользователь " + nick + " зашёл в чат");
                         server.subscribe(this);
                         if (Files.exists(Path.of("history_[" + this.getNick() + "].txt"))) {
                             try (DataInputStream in = new DataInputStream(new FileInputStream("history_[" + this.getNick() + "].txt"))) {
@@ -89,6 +92,7 @@ public class ClientHandler {
                         return true;
                     } else {
                         sendMessage(ERROR, "Неверный логин и/или пароль");
+                        LOGGER.warn("String: {}.", "Попытка входа с неверным логином/паролем");
                         continue;
                     }
                 }
@@ -184,6 +188,7 @@ public class ClientHandler {
                     }
                 }
                 server.broadcast(nick + ": " + params[0]);
+                LOGGER.info("String: {}.", "Пользователь " + nick + " отправил сообщение");
             } catch (IOException e) {
                 e.printStackTrace();
             }
